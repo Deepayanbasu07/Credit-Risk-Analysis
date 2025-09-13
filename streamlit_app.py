@@ -113,9 +113,11 @@ def preprocess_data(df_train, df_test):
     df_train = df_train.dropna().reset_index(drop=True)
     df_test = df_test.dropna().reset_index(drop=True)
 
-    # One-hot encoding
-    df_train = pd.get_dummies(df_train, columns=['occupation_type'], drop_first=True)
-    df_test = pd.get_dummies(df_test, columns=['occupation_type'], drop_first=True)
+    # One-hot encoding with consistent columns
+    combined = pd.concat([df_train, df_test], ignore_index=True)
+    combined = pd.get_dummies(combined, columns=['occupation_type'], drop_first=True)
+    df_train = combined.iloc[:len(df_train)].copy()
+    df_test = combined.iloc[len(df_train):].copy().drop(columns=['credit_card_default'], errors='ignore')
 
     # Log transformations
     df_train['log_income'] = np.log1p(df_train['net_yearly_income'])
