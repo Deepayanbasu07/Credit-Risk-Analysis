@@ -1,4 +1,5 @@
-# Credit Risk Analysis & Model Governance Dashboard
+# Credit Risk Analysis & Model Governance  
+[Link to App](https://credit-risk-analysis-kj26gcon5onzdnrb9pfv7k.streamlit.app/).
 
 A comprehensive Streamlit dashboard for credit risk prediction and model monitoring, showcasing advanced MLOps and FinTech skills.
 
@@ -35,9 +36,6 @@ This dashboard demonstrates expertise in:
 - Disparity ratio calculations
 - Fairness metrics visualization
 
-- Profit/loss calculations based on model decisions
-- Threshold optimization for business objectives
-- Risk-adjusted return analysis
 
 ### 🎨 Interactive Visualizations
 - Complete EDA walkthrough (replicated from notebook)
