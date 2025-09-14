@@ -10,8 +10,6 @@ from sklearn.linear_model import LogisticRegression
 from sklearn.ensemble import RandomForestClassifier, GradientBoostingClassifier
 from imblearn.over_sampling import SMOTE
 import shap
-import joblib
-import os
 import warnings
 warnings.filterwarnings('ignore')
 
@@ -187,56 +185,22 @@ def preprocess_data(df_train, df_test):
     return df_train, df_test
 
 @st.cache_resource
-def load_or_train_models(X_train, y_train):
-    """Load pretrained models if available, otherwise train and save them"""
-    models_dir = 'models'
-    if not os.path.exists(models_dir):
-        os.makedirs(models_dir)
+def train_models(X_train, y_train):
+    """Train all models"""
+    # Handle class imbalance
+    smote = SMOTE(random_state=42)
+    X_train_resampled, y_train_resampled = smote.fit_resample(X_train, y_train)
 
-    model_files = {
-        'lr_model.pkl': None,
-        'rf_model.pkl': None,
-        'gb_model.pkl': None,
-        'xgb_model.pkl': None,
-        'X_train_resampled.pkl': None,
-        'y_train_resampled.pkl': None
-    }
+    # Train models
+    lr_model = LogisticRegression(random_state=42, solver='liblinear')
+    rf_model = RandomForestClassifier(random_state=42)
+    gb_model = GradientBoostingClassifier(random_state=42)
+    xgb_model = xgb.XGBClassifier(random_state=42)
 
-    # Check if all model files exist
-    all_models_exist = all(os.path.exists(os.path.join(models_dir, f)) for f in model_files.keys())
-
-    if all_models_exist:
-        # Load pretrained models
-        lr_model = joblib.load(os.path.join(models_dir, 'lr_model.pkl'))
-        rf_model = joblib.load(os.path.join(models_dir, 'rf_model.pkl'))
-        gb_model = joblib.load(os.path.join(models_dir, 'gb_model.pkl'))
-        xgb_model = joblib.load(os.path.join(models_dir, 'xgb_model.pkl'))
-        X_train_resampled = joblib.load(os.path.join(models_dir, 'X_train_resampled.pkl'))
-        y_train_resampled = joblib.load(os.path.join(models_dir, 'y_train_resampled.pkl'))
-    else:
-        # Train models
-        # Handle class imbalance
-        smote = SMOTE(random_state=42)
-        X_train_resampled, y_train_resampled = smote.fit_resample(X_train, y_train)
-
-        # Train models
-        lr_model = LogisticRegression(random_state=42, solver='liblinear')
-        rf_model = RandomForestClassifier(random_state=42)
-        gb_model = GradientBoostingClassifier(random_state=42)
-        xgb_model = xgb.XGBClassifier(random_state=42)
-
-        lr_model.fit(X_train_resampled, y_train_resampled)
-        rf_model.fit(X_train_resampled, y_train_resampled)
-        gb_model.fit(X_train_resampled, y_train_resampled)
-        xgb_model.fit(X_train_resampled, y_train_resampled)
-
-        # Save models
-        joblib.dump(lr_model, os.path.join(models_dir, 'lr_model.pkl'))
-        joblib.dump(rf_model, os.path.join(models_dir, 'rf_model.pkl'))
-        joblib.dump(gb_model, os.path.join(models_dir, 'gb_model.pkl'))
-        joblib.dump(xgb_model, os.path.join(models_dir, 'xgb_model.pkl'))
-        joblib.dump(X_train_resampled, os.path.join(models_dir, 'X_train_resampled.pkl'))
-        joblib.dump(y_train_resampled, os.path.join(models_dir, 'y_train_resampled.pkl'))
+    lr_model.fit(X_train_resampled, y_train_resampled)
+    rf_model.fit(X_train_resampled, y_train_resampled)
+    gb_model.fit(X_train_resampled, y_train_resampled)
+    xgb_model.fit(X_train_resampled, y_train_resampled)
 
     return lr_model, rf_model, gb_model, xgb_model, X_train_resampled, y_train_resampled
 
@@ -377,8 +341,8 @@ def main():
     X_train = X_train_split
     y_train = y_train_split
 
-    # Load or train models
-    lr_model, rf_model, gb_model, xgb_model, X_train_resampled, y_train_resampled = load_or_train_models(X_train, y_train)
+    # Train models
+    lr_model, rf_model, gb_model, xgb_model, X_train_resampled, y_train_resampled = train_models(X_train, y_train)
 
     # Get predictions for all models
     y_pred_lr = lr_model.predict(X_test)
