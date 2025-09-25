@@ -8,3 +8,4 @@ imbalanced-learn
 shap
 statsmodels
 joblib
+plotly
